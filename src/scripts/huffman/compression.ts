@@ -159,7 +159,7 @@ export default class HuffmanCompressor {
     return header.join("") + traversal + compressedData.join("");
   }
 
-  public decompress({ data, name }: FileInfo): string {
+  public decompress({ data }: FileInfo): string {
     // The compressed file structure should be:
     // - 5 Bits for extension length (without dot), max value 32
     // - 3 Bits for thrash size, max value 8
