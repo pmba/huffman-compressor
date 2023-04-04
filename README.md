@@ -10,7 +10,7 @@ Once the binary tree is constructed, each character in the input data stream can
 
 ## How to Execute the Project
 
-1. Clone the repository by running `git clone https://github.com/username/repo.git` in your terminal or by downloading the zip file and extracting it to your preferred location.
+1. Clone the repository by running `git clone https://github.com/pmba/huffman-compressor` in your terminal or by downloading the zip file and extracting it to your preferred location.
 
 2. Open a terminal window and navigate to the cloned repository folder.
 
