@@ -1,3 +1,4 @@
+import { FileInfo } from ".";
 import { formatBytes } from "./utils/file-utils";
 const compressionActionsContainer = document.getElementById(
   "compressionContainer"
@@ -17,7 +18,9 @@ const compressButtonsContainer = document.getElementById(
   "compressButtonsContainer"
 )!;
 const downloadContainer = document.getElementById("downloadContainer")!;
-const downloadButton = document.getElementById("downloadButton")!;
+const downloadButton = document.getElementById(
+  "downloadButton"
+)! as HTMLAnchorElement;
 const spinner = document.getElementById("spinner")!;
 
 export const showCompressionPanel = (show = true) => {
@@ -43,6 +46,7 @@ export const setupFileInfo = (info: { name: string; size: number }) => {
 };
 
 type States = "DEFAULT" | "COMPRESSION" | "DOWNLOAD";
+
 export const setCurrentState = (state: States) => {
   if (state === "COMPRESSION") {
     compressButton.disabled = true;
@@ -68,3 +72,25 @@ export const setCurrentState = (state: States) => {
     compressButtonsContainer.classList.remove("hidden");
   }
 };
+
+export function setupFileDownload({
+  bytes,
+  fileInfo,
+  compressed,
+}: {
+  bytes: Uint8Array;
+  fileInfo: FileInfo;
+  compressed: boolean;
+}) {
+  const blob = new Blob([bytes], {
+    type: "text/plain;charset=utf-8;",
+  });
+
+  const [fileName, fileExtension] = fileInfo.name.split(".");
+
+  downloadButton.href = URL.createObjectURL(blob);
+  downloadButton.download =
+    fileName + (compressed ? ".huff" : `.${fileExtension}`);
+
+  setCurrentState("DOWNLOAD");
+}

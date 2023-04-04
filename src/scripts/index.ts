@@ -1,6 +1,11 @@
 import { dropZoneElement } from "./dragdrop";
 import HuffmanCompressor from "./huffman/compression";
-import { setCurrentState, setupFileInfo, showCompressionPanel } from "./ui";
+import {
+  setCurrentState,
+  setupFileDownload,
+  setupFileInfo,
+  showCompressionPanel,
+} from "./ui";
 import { getFileData } from "./utils/file-utils";
 
 const fileInput = document.getElementById("fileInput")! as HTMLInputElement;
@@ -80,39 +85,26 @@ const huffman = new HuffmanCompressor();
 compressButton.onclick = () => {
   setCurrentState("COMPRESSION");
 
-  const compressedData = huffman.compress(fileInfo);
+  const compressedBytes = huffman.compress(fileInfo);
 
-  // Download File
-
-  const element = document.createElement("a");
-  element.setAttribute(
-    "href",
-    "data:text/plain;charset=utf-8," + compressedData
-  );
-  element.setAttribute("download", "compressed.huff");
-
-  element.style.display = "none";
-  document.body.appendChild(element);
-
-  element.click();
-
-  document.body.removeChild(element);
+  setupFileDownload({
+    bytes: compressedBytes,
+    fileInfo: fileInfo,
+    compressed: true,
+  });
 };
 
 decompressButton.onclick = () => {
   setCurrentState("COMPRESSION");
-  const decompData = huffman.decompress(fileInfo);
+  const { bytes, extension } = huffman.decompress(fileInfo);
 
-  const element = document.createElement("a");
-  element.setAttribute("href", "data:text/plain;charset=utf-8," + decompData);
-  element.setAttribute("download", "compressed.txt");
+  fileInfo.name = fileInfo.name.split(".")[0] + "." + extension;
 
-  element.style.display = "none";
-  document.body.appendChild(element);
-
-  element.click();
-
-  document.body.removeChild(element);
+  setupFileDownload({
+    bytes,
+    fileInfo,
+    compressed: false,
+  });
 };
 
 //#endregion

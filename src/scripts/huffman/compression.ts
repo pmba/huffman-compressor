@@ -13,7 +13,7 @@ export default class HuffmanCompressor {
     }
   }
 
-  public compress({ data, name }: FileInfo): string {
+  public compress({ data, name }: FileInfo): Uint8Array {
     this.assertData(data);
 
     const { traversal, table } = this.utils.getInfos(data);
@@ -22,6 +22,7 @@ export default class HuffmanCompressor {
     // - 5 Bits for extension length (without dot), max value 32
     // - 3 Bits for thrash size, max value 8
     // - 16 Bits for tree traversal size, max value 65536
+    // - File Extension (without dot)
     // - Tree traversal
     // - Compressed Bytes (including trash)
 
@@ -30,8 +31,6 @@ export default class HuffmanCompressor {
 
     for (let byte of data) {
       let bitPath = table.get(byte);
-
-      console.log(byte, bitPath);
 
       if (!bitPath) {
         throw new Error(
@@ -79,7 +78,6 @@ export default class HuffmanCompressor {
       compressedData.push(String.fromCharCode(value));
     }
 
-    console.log(name);
     const extension = name.split(".")[1];
 
     const extLength = extension.length;
@@ -109,8 +107,6 @@ export default class HuffmanCompressor {
       }
     }
 
-    console.log(`FirstByte: ${firstByte.value} - ${firstByte.binary()}`);
-
     // Build next two bytes:
     // - 16 Bits for tree traversal size, max value 65536
 
@@ -135,35 +131,27 @@ export default class HuffmanCompressor {
       }
     }
 
-    console.log(`SecondByte: ${secondByte.value} - ${secondByte.binary()}`);
-    console.log(`ThirdByte: ${thirdByte.value} - ${thirdByte.binary()}`);
-
     const header = [firstByte, secondByte, thirdByte].map((byte) =>
       String.fromCharCode(byte.value)
     );
 
-    console.log(header);
-    console.log(traversal);
-    console.log(compressedData);
-
-    compressedData.forEach((byte) => {
-      console.log(numberToBinString(byte.charCodeAt(0), 8));
-    });
-
-    console.log(
-      `Final Length: ${
-        header.length + traversal.length + compressedData.length
-      }`
+    // Turn the final data string into Uint8Array to write it into a file
+    const compressedDataString =
+      header.join("") + extension + traversal + compressedData.join("");
+    return new Uint8Array(compressedDataString.length).map((_, i) =>
+      compressedDataString.charCodeAt(i)
     );
-
-    return header.join("") + traversal + compressedData.join("");
   }
 
-  public decompress({ data }: FileInfo): string {
+  public decompress({ data }: FileInfo): {
+    bytes: Uint8Array;
+    extension: string;
+  } {
     // The compressed file structure should be:
     // - 5 Bits for extension length (without dot), max value 32
     // - 3 Bits for thrash size, max value 8
     // - 16 Bits for tree traversal size, max value 65536
+    // - File Extension (without dot)
     // - Tree traversal
     // - Compressed Bytes (including trash)
 
@@ -172,10 +160,6 @@ export default class HuffmanCompressor {
     // - 3 Bits for thrash size
 
     const firstByte = new BitSet(data[0].charCodeAt(0));
-    console.log(
-      "🚀 ~ file: compression.ts:169 ~ HuffmanCompressor ~ decompress ~ firstByte:",
-      firstByte.value
-    );
 
     const trashSize = new BitSet();
 
@@ -185,11 +169,6 @@ export default class HuffmanCompressor {
       }
     }
 
-    console.log(
-      "🚀 ~ file: compression.ts:180 ~ HuffmanCompressor ~ decompress ~ trashSize:",
-      trashSize.value
-    );
-
     const extensionLen = new BitSet();
 
     for (let bit = 3; bit < 8; ++bit) {
@@ -197,11 +176,6 @@ export default class HuffmanCompressor {
         extensionLen.set(bit - 3);
       }
     }
-
-    console.log(
-      "🚀 ~ file: compression.ts:194 ~ HuffmanCompressor ~ decompress ~ extensionLen:",
-      extensionLen.value
-    );
 
     // Get tree traversal length:
     // - 16 Bits for tree traversal size
@@ -221,23 +195,20 @@ export default class HuffmanCompressor {
       }
     }
 
-    console.log(
-      "🚀 ~ file: compression.ts:206 ~ HuffmanCompressor ~ decompress ~ treeTraversalLen:",
-      treeTraversalLen.value
-    );
+    let index = 3;
+
+    // Get file extension
+
+    const extension = data.substring(index, index + extensionLen.value);
+    index += extension.length;
 
     // Get tree travesal
 
-    const traversal = data.substring(3, treeTraversalLen.value + 3);
-    console.log(
-      "🚀 ~ file: compression.ts:225 ~ HuffmanCompressor ~ decompress ~ traversal:",
-      traversal
-    );
+    const traversal = data.substring(index, index + treeTraversalLen.value);
+    index += traversal.length;
 
     const treeTraversal = new PreorderTraversal(traversal);
-    console.log(treeTraversal.tree);
 
-    let index = traversal.length + 3;
     let head = treeTraversal.tree;
 
     const decompData: string[] = [];
@@ -265,8 +236,14 @@ export default class HuffmanCompressor {
       ++index;
     }
 
-    console.log(decompData);
+    // Turn the final data string into Uint8Array to write it into a file
+    const bytes = new Uint8Array(decompData.length).map((_, i) =>
+      decompData[i].charCodeAt(0)
+    );
 
-    return decompData.join("");
+    return {
+      bytes,
+      extension,
+    };
   }
 }
