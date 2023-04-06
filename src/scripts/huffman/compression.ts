@@ -1,6 +1,7 @@
 import { FileInfo } from "..";
 import BitSet from "../structures/bitset";
 import PreorderTraversal from "../structures/traversal";
+import { escapedChar } from "../utils/escaping";
 import { numberToBinString } from "./../utils/binary";
 import { HuffmanUtils } from "./utils";
 
@@ -18,6 +19,9 @@ export default class HuffmanCompressor {
 
     const { traversal, table } = this.utils.getInfos(data);
 
+    console.log(`Traversal: ${traversal}`);
+    console.log(`Table: ${table}`);
+
     // The compressed file structure should be:
     // - 5 Bits for extension length (without dot), max value 32
     // - 3 Bits for thrash size, max value 8
@@ -30,7 +34,7 @@ export default class HuffmanCompressor {
     let bitBuffer: string[] = [];
 
     for (let byte of data) {
-      let bitPath = table.get(byte);
+      let bitPath = table.get(escapedChar(byte));
 
       if (!bitPath) {
         throw new Error(

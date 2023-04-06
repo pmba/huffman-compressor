@@ -1,4 +1,5 @@
 import TreeNode from "../structures/node";
+import { escapedChar } from "../utils/escaping";
 import { MinHeap } from "./../structures/heap";
 
 type HuffmanInfos = { traversal: string; table: Map<string, Uint8Array> };
@@ -15,10 +16,12 @@ export class HuffmanUtils {
     const frequencies = new Map<string, number>();
 
     let currentFrequency = 0;
+    let currentChar = "";
 
     for (let i = 0; i < data.length; ++i) {
-      currentFrequency = frequencies.get(data[i]) ?? 0;
-      frequencies.set(data[i], ++currentFrequency);
+      currentChar = escapedChar(data[i]);
+      currentFrequency = frequencies.get(currentChar) ?? 0;
+      frequencies.set(currentChar, ++currentFrequency);
     }
 
     // Build minimum heap from frequencies
@@ -39,6 +42,10 @@ export class HuffmanUtils {
    */
   private buildTree(data: string): TreeNode | undefined {
     const heap = this.getHeap(data);
+
+    console.log(heap);
+
+    // throw Error("");
 
     if (heap.empty()) return;
 

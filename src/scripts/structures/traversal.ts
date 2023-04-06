@@ -38,9 +38,17 @@ export default class PreorderTraversal {
     }
 
     const node = new TreeNode();
-    const value = this._traversal[this.index];
 
-    if (value !== "*") {
+    const isEscaped = this._traversal[this.index] == "\\";
+    if (isEscaped) {
+      // If is a escape character we can skip it
+      ++this.index;
+    }
+
+    const value = this._traversal[this.index];
+    const isAsterisk = value === "*";
+
+    if ((isAsterisk && isEscaped) || !isAsterisk) {
       node.value = value;
       return node;
     }
