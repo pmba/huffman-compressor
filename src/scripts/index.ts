@@ -1,5 +1,4 @@
 import { dropZoneElement } from "./dragdrop";
-import HuffmanCompressor from "./huffman/compression";
 import {
   setCurrentState,
   setupFileDownload,
@@ -7,6 +6,7 @@ import {
   showCompressionPanel,
 } from "./ui";
 import { getFileData } from "./utils/file-utils";
+import HuffmanWorker from "./worker";
 
 const fileInput = document.getElementById("fileInput")! as HTMLInputElement;
 const searchFileButton = document.getElementById("searchFileButton")!;
@@ -33,6 +33,7 @@ const setupFile = async (file: File): Promise<FileInfo> => {
     size: fileData.length,
   });
 
+  setCurrentState("DEFAULT");
   showCompressionPanel();
 
   return {
@@ -80,30 +81,41 @@ dropZoneElement.ondrop = async (event) => {
 
 //#region Compress and Decompress buttons config
 
-const huffman = new HuffmanCompressor();
+const worker = new Worker("/src/scripts/worker/worker.ts", {
+  type: "module",
+}) as HuffmanWorker;
+
+worker.onmessage = function (message) {
+  const { type, bytes, extension } = message.data;
+
+  const wasCompressed = type === "compress";
+
+  if (!wasCompressed) {
+    fileInfo.name = fileInfo.name.split(".")[0] + "." + extension;
+  }
+
+  setupFileDownload({
+    bytes,
+    fileInfo,
+    compressed: wasCompressed,
+  });
+};
 
 compressButton.onclick = () => {
   setCurrentState("COMPRESSION");
 
-  const compressedBytes = huffman.compress(fileInfo);
-
-  setupFileDownload({
-    bytes: compressedBytes,
-    fileInfo: fileInfo,
-    compressed: true,
+  worker.postMessage({
+    type: "compress",
+    ...fileInfo,
   });
 };
 
 decompressButton.onclick = () => {
   setCurrentState("COMPRESSION");
-  const { bytes, extension } = huffman.decompress(fileInfo);
 
-  fileInfo.name = fileInfo.name.split(".")[0] + "." + extension;
-
-  setupFileDownload({
-    bytes,
-    fileInfo,
-    compressed: false,
+  worker.postMessage({
+    type: "decompress",
+    ...fileInfo,
   });
 };
 
