@@ -81,7 +81,9 @@ dropZoneElement.ondrop = async (event) => {
 
 //#region Compress and Decompress buttons config
 
-const worker = new Worker("/src/scripts/worker/worker.ts", {
+console.log(import.meta.url);
+
+const worker = new Worker(new URL("./worker/worker.ts", import.meta.url), {
   type: "module",
 }) as HuffmanWorker;
 

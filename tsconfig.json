@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "commonjs",
+    "module": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["ESNext", "DOM", "webworker"],
     "moduleResolution": "Node",
