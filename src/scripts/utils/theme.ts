@@ -6,8 +6,6 @@ const themeToggleBtn = document.getElementById(
   "theme-toggle"
 )! as HTMLButtonElement;
 
-type ThemeScheme = "light" | "dark";
-
 export function setupTheme() {
   if (
     localStorage.theme === "dark" ||
