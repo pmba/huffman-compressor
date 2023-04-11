@@ -2,6 +2,8 @@
 
 This is a file compressor built using the Huffman coding algorithm and implemented with HTML, Tailwind, and Typescript. Huffman coding is a lossless data compression algorithm that takes advantage of the frequency of characters in a data stream to compress it into a more compact form.
 
+> Visit [huffman.pmba.dev](https://huffman.pmba.dev/) to use the file compressor.
+
 ## Huffman Coding Algorithm
 
 The Huffman coding algorithm works by first calculating the frequency of each character in the input data stream. Then, it constructs a binary tree where each leaf node represents a character and its weight is equal to its frequency. The tree is constructed by repeatedly combining the two nodes with the smallest weights until all nodes are combined into a single root node.
