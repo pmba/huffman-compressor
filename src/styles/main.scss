@@ -1,3 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .h-1px {
   height: 1px;
+}
+
+.theme-btn {
+  position: absolute;
+  z-index: 999;
+  right: 16px;
+  top: 16px;
 }
